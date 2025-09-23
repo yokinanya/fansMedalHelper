@@ -22,6 +22,10 @@ class Config:
         "WEARMEDAL": 1,
         "SIGNINGROUP": 2,
         "PROXY": "",
+        "coin_remain": 0,
+        "coin_uid": 0,
+        "coin_max": 0,
+        "coin_max_per_uid": 0,
     }
 
     def __init__(self):

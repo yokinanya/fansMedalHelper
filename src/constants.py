@@ -10,6 +10,7 @@ class BiliConstants:
     # API相关
     APPKEY = "4409e2ce8ffd12b8"
     APPSECRET = "59b43e04ad6965f34319062b478f83dd"
+    APPBUILD = "6731100"
 
     # Headers
     HEADERS = {
@@ -49,6 +50,12 @@ class BiliConstants:
         WEAR_MEDAL = "https://api.live.bilibili.com/xlive/web-ucenter/v1/fansMedal/wear"
         GROUPS = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
         SIGN_IN_GROUPS = "https://api.vc.bilibili.com/link_setting/v1/link_setting/sign_in"
+        
+        # 投币相关
+        VIDEO_COINS_STATUS = "https://api.bilibili.com/x/web-interface/archive/coins"
+        COIN_VIDEO = "https://app.bilibili.com/x/v2/view/coin/add"
+        USER_VIDEOS = "https://app.biliapi.com/x/v2/space/archive/cursor"
+        MY_INFO = "https://app.bilibili.com/x/v2/account/myinfo"
 
     # 错误码
     class ErrorCodes:

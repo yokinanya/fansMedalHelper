@@ -118,7 +118,7 @@ class FansMedalHelper:
                 user_config["access_key"],
                 user_config.get("white_uid", ""),
                 user_config.get("banned_uid", ""),
-                self.config.config,
+                self._merge_user_config(user_config),
             )
 
             users.append(bili_user)
@@ -137,6 +137,21 @@ class FansMedalHelper:
                 raise
 
         return users
+
+    def _merge_user_config(self, user_config: dict) -> dict:
+        """合并用户配置和全局配置"""
+        merged_config = self.config.config.copy()
+        
+        # 用户级别配置项（会覆盖全局配置）
+        user_specific_keys = [
+            'coin_remain', 'coin_uid', 'coin_max', 'coin_max_per_uid'
+        ]
+        
+        for key in user_specific_keys:
+            if key in user_config:
+                merged_config[key] = user_config[key]
+        
+        return merged_config
 
     async def execute_tasks(self, users: List[BiliUser]) -> List[str]:
         """执行所有用户的任务"""

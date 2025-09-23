@@ -12,7 +12,7 @@ from .constants import BiliConstants
 from .exceptions import LoginError
 from .logger_manager import LogManager
 from .services import (AuthService, DanmakuService, GroupService,
-                       HeartbeatService, LikeService, MedalService)
+                       HeartbeatService, LikeService, MedalService, CoinService)
 from .stats_service import StatsService
 
 
@@ -50,6 +50,7 @@ class BiliUser:
         self.danmaku_service = DanmakuService(self.api)
         self.heartbeat_service = HeartbeatService(self.api)
         self.group_service = GroupService(self.api)
+        self.coin_service = CoinService(self.api, self.whiteList, self.bannedList)
         self.stats_service = None  # 将在登录验证后初始化
 
         # 任务状态
@@ -90,6 +91,7 @@ class BiliUser:
             self.danmaku_service = DanmakuService(self.api, self.log)
             self.heartbeat_service = HeartbeatService(self.api, self.log)
             self.group_service = GroupService(self.api, self.log)
+            self.coin_service = CoinService(self.api, self.whiteList, self.bannedList, self.log)
 
             # 获取初始佩戴勋章信息
             if user_info.medal:
@@ -159,12 +161,20 @@ class BiliUser:
         else:
             self.log.info("所有牌子已满 30 亲密度")
 
+        # 执行弹幕和应援团任务
         tasks.extend([
             self.danmaku_service.execute(self.medalsNoLiving, self.config),
             self.group_service.execute(self.config),
         ])
 
-        # 等待所有任务完成（维持原始程序逻辑）
+        # 执行投币任务并获取结果
+        coin_result = await self.coin_service.execute(self.config)
+        
+        # 将投币结果传递给统计服务
+        if hasattr(self, 'stats_service') and self.stats_service:
+            self.stats_service.set_coin_stats(coin_result)
+
+        # 等待其他任务完成（维持原始程序逻辑）
         await asyncio.gather(*tasks, return_exceptions=True)
 
     async def send_msg(self):
