@@ -473,14 +473,16 @@ class CoinService(BaseService):
         last_aid = None
         page = 0
         up_name = f"UP主_{uid}"  # 默认名字
-        
+
         # 先尝试获取一页视频来解析UP主名字
         try:
-            first_result = await self.api.getUserVideoUploaded(uid, ps=1, order="pubdate")
+            first_result = await self.api.getUserVideoUploaded(uid, ps=10, order="pubdate")
             if first_result.get("item") and first_result["item"]:
-                first_video = first_result["item"][0]
-                if first_video.get("author"):
-                    up_name = first_video["author"]
+                # 遍历视频列表，找到不包含"联合创作"的UP主名字
+                for video in first_result["item"]:
+                    if video.get("author") and "联合创作" not in video["author"]:
+                        up_name = video["author"]
+                        break
         except Exception as e:
             self.log.debug(f"获取UP主 {uid} 名字失败: {e}")
 
@@ -602,7 +604,7 @@ class CoinService(BaseService):
         success_count = 0
         uid_coin_count = {}  # 记录每个UP主已投币数
         up_stats = {}  # 记录UP主统计信息（包含名字）
-        
+
         # 按UP主分组视频，避免重复检查已达上限的UP主
         videos_by_uid = {}
         for video in videos:
@@ -615,10 +617,11 @@ class CoinService(BaseService):
         for uid, up_videos in videos_by_uid.items():
             if success_count >= max_coins:
                 break
-                
+
             # 获取UP主信息
-            up_name = up_videos[0].get("_coin_up_name", f"UP主_{uid}") if up_videos else f"UP主_{uid}"
-            
+            up_name = up_videos[0].get(
+                "_coin_up_name", f"UP主_{uid}") if up_videos else f"UP主_{uid}"
+
             # 处理该UP主的视频
             for video in up_videos:
                 if success_count >= max_coins:
@@ -628,7 +631,8 @@ class CoinService(BaseService):
                 if coin_max_per_uid > 0 and uid > 0:
                     current_uid_coins = uid_coin_count.get(uid, 0)
                     if current_uid_coins >= coin_max_per_uid:
-                        self.log.debug(f"UP主 {up_name} ({uid}) 今日投币已达上限 {coin_max_per_uid}，跳过后续视频")
+                        self.log.debug(
+                            f"UP主 {up_name} ({uid}) 今日投币已达上限 {coin_max_per_uid}，跳过后续视频")
                         break  # 跳出该UP主的视频循环，不再处理该UP主的其他视频
 
                 aid = video.get("param") or video.get("aid")
@@ -692,10 +696,6 @@ class CoinService(BaseService):
                 self.log.info(f"UP主 {up_name} ({uid}) 本次投币 {count} 个")
 
         return success_count, up_stats
-
-    async def execute(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """执行投币任务"""
-        return await self.coin_videos(config)
 
     async def execute(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """执行投币任务"""

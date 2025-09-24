@@ -50,7 +50,7 @@ class BiliConstants:
         WEAR_MEDAL = "https://api.live.bilibili.com/xlive/web-ucenter/v1/fansMedal/wear"
         GROUPS = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
         SIGN_IN_GROUPS = "https://api.vc.bilibili.com/link_setting/v1/link_setting/sign_in"
-        
+
         # 投币相关
         VIDEO_COINS_STATUS = "https://api.bilibili.com/x/web-interface/archive/coins"
         COIN_VIDEO = "https://app.bilibili.com/x/v2/view/coin/add"
