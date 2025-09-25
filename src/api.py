@@ -348,3 +348,107 @@ class BiliApi:
             "ts": get_timestamp(),
         }
         return await self._post(url, data=SignableDict(params).signed, headers=self.headers)
+
+    async def getVideoCoinsStatus(self, aid: int = None, bvid: str = None):
+        """判断视频是否被投币
+
+        Args:
+            aid: 稿件 avid (与bvid二选一)
+            bvid: 稿件 bvid (与avid二选一)
+        Return:
+            dict: 包含是否已投币等信息的字典
+            {
+                "code": 0,
+                "message": "0",
+                "ttl": 1,
+                "data": {
+                    "multiply": 0
+                }
+            }
+            multiply: 已投币数量 (0, 1, 2)
+        """
+        url = BiliConstants.URLs.VIDEO_COINS_STATUS
+        params = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": BiliConstants.APPKEY,
+            "ts": get_timestamp(),
+        }
+
+        # 根据文档，aid 与 bvid 任选一个
+        if aid is not None:
+            params["aid"] = aid
+        elif bvid is not None:
+            params["bvid"] = bvid
+        else:
+            raise ValueError("aid 与 bvid 必须提供其中一个")
+
+        return await self._get(url, params=params, headers=self.headers)
+
+    async def coinVideo(self, aid: int, multiply: int = 1, select_like: int = 0):
+        """投币视频
+
+        Args:
+            aid: 稿件 avid
+            multiply: 投币数量 (上限为2)
+            select_like: 是否附加点赞 (0: 不点赞, 1: 同时点赞)
+        """
+        url = BiliConstants.URLs.COIN_VIDEO
+        data = {
+            "access_key": self.u.access_key,
+            "aid": aid,
+            "multiply": multiply,
+            "select_like": select_like,
+            "actionKey": "appkey",
+            "appkey": BiliConstants.APPKEY,
+            "ts": get_timestamp(),
+        }
+
+        self.headers.update(
+            {"Content-Type": "application/x-www-form-urlencoded"})
+        return await self._post(url, data=data, headers=self.headers)
+
+    async def getUserVideoUploaded(self, vmid: int, aid: int = None, order: str = "pubdate", ps: int = 20):
+        """查询用户投稿明细 (APP端)
+
+        Args:
+            vmid: 目标用户mid (必要)
+            aid: 请求返回起始视频，填写上次请求返回最后视频的aid (首次请求不需要)
+            order: 排序方式 (非必要) click代表最多播放，pubdate代表最新发布，默认为pubdate
+            ps: 每页条数 (非必要) 默认为20
+
+        Returns:
+            dict: 包含视频列表和分页信息的字典
+        """
+        url = BiliConstants.URLs.USER_VIDEOS
+        params = {
+            "vmid": vmid,
+            "order": order,
+            "ps": ps,
+            "access_key": self.u.access_key,
+            "actionKey": "appkey",
+            "appkey": BiliConstants.APPKEY,
+            "build": BiliConstants.APPBUILD,
+            "ts": get_timestamp(),
+        }
+
+        # 如果指定了aid，添加到参数中
+        if aid is not None:
+            params["aid"] = aid
+
+        return await self._get(url, params=SignableDict(params).signed, headers=self.headers)
+
+    async def getMyInfo(self):
+        """获取登录用户信息（APP端）
+
+        Returns:
+            dict: 包含用户详细信息的字典
+        """
+        url = BiliConstants.URLs.MY_INFO
+        params = {
+            "access_key": self.u.access_key,
+            "actionKey": "appkey", 
+            "appkey": BiliConstants.APPKEY,
+            "ts": get_timestamp(),
+        }
+        return await self._get(url, params=SignableDict(params).signed, headers=self.headers)

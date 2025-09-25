@@ -1,6 +1,6 @@
-aiohttp>=3.12.13
-aiohttp-socks>=0.10.1
-apscheduler>=3.11.0
-loguru>=0.7.3
-onepush>=1.5.0
-pyyaml>=6.0.2
+aiohttp
+aiohttp-socks
+apscheduler
+loguru
+onepush
+pyyaml

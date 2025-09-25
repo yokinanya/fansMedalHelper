@@ -5,10 +5,10 @@ description = "B站粉丝牌助手"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "aiohttp>=3.12.13",
-    "aiohttp-socks>=0.10.1",
-    "apscheduler>=3.11.0",
-    "loguru>=0.7.3",
+    "aiohttp>=3.9.0",
+    "aiohttp-socks>=0.8.0",
+    "apscheduler>=3.10.0",
+    "loguru>=0.7.0",
     "onepush>=1.5.0",
-    "pyyaml>=6.0.2",
+    "pyyaml>=6.0.0",
 ]

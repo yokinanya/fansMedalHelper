@@ -13,6 +13,11 @@ class StatsService(BaseService):
     def __init__(self, api, user_name: str, logger=None):
         super().__init__(api, logger)
         self.user_name = user_name
+        self.coin_stats = {}  # 存储投币统计信息
+
+    def set_coin_stats(self, coin_result: Dict[str, Any]):
+        """设置投币统计信息"""
+        self.coin_stats = coin_result
 
     def calculate_medal_stats(self, medals: List[Dict[str, Any]]) -> Dict[str, List[str]]:
         """计算勋章统计"""
@@ -58,6 +63,36 @@ class StatsService(BaseService):
 
         return messages
 
+    def generate_coin_report(self) -> List[str]:
+        """生成投币统计报告"""
+        messages = []
+        
+        if not self.coin_stats:
+            return messages
+            
+        success_count = self.coin_stats.get("success_count", 0)
+        up_stats = self.coin_stats.get("up_stats", {})
+        
+        if success_count > 0:
+            messages.append(f"【投币任务】成功投币 {success_count} 次")
+            
+            # 显示每个UP主的投币情况
+            if up_stats:
+                up_details = []
+                for uid, stats in up_stats.items():
+                    up_name = stats.get("name", f"UP主_{uid}")
+                    count = stats.get("count", 0)
+                    up_details.append(f"{up_name}({count}个)")
+                
+                if up_details:
+                    # 限制显示长度，避免消息过长
+                    display_details = up_details[:5]
+                    if len(up_details) > 5:
+                        display_details.append("等")
+                    messages.append(f"【投币详情】{' '.join(display_details)}")
+        
+        return messages
+
     async def get_current_medal_info(self, initial_medal: Dict[str, Any]) -> List[str]:
         """获取当前佩戴勋章信息"""
         messages = []
@@ -85,6 +120,10 @@ class StatsService(BaseService):
         """生成完整的统计报告"""
         stats = self.calculate_medal_stats(medals)
         messages = self.generate_report_messages(stats)
+
+        # 添加投币统计
+        coin_messages = self.generate_coin_report()
+        messages.extend(coin_messages)
 
         if initial_medal:
             medal_info = await self.get_current_medal_info(initial_medal)
