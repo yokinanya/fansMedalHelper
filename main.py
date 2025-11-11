@@ -6,6 +6,7 @@ import itertools
 import os
 import signal
 import sys
+import threading
 import warnings
 from typing import List
 
@@ -78,6 +79,11 @@ class FansMedalHelper:
 
     def setup_signal_handlers(self):
         """设置信号处理器"""
+        # 核心修复：只在主线程中设置信号处理器
+        if threading.current_thread() is not threading.main_thread():
+            self.log.info("非主线程，跳过信号处理器设置。")
+            return
+
         if sys.platform != "win32":
             # Unix/Linux 系统信号处理
             signal.signal(signal.SIGINT, self._signal_handler)
@@ -141,16 +147,16 @@ class FansMedalHelper:
     def _merge_user_config(self, user_config: dict) -> dict:
         """合并用户配置和全局配置"""
         merged_config = self.config.config.copy()
-        
+
         # 用户级别配置项（会覆盖全局配置）
         user_specific_keys = [
             'coin_remain', 'coin_uid', 'coin_max', 'coin_max_per_uid'
         ]
-        
+
         for key in user_specific_keys:
             if key in user_config:
                 merged_config[key] = user_config[key]
-        
+
         return merged_config
 
     async def execute_tasks(self, users: List[BiliUser]) -> List[str]:
