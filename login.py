@@ -44,7 +44,7 @@ def print_qr_code(data: str, scale: int) -> None:
         lower = matrix[index + 1] if index + 1 < len(matrix) else [False] * len(upper)
         line = "".join(qr_cell(top, bottom) * scale for top, bottom in zip(upper, lower))
         for _ in range(scale):
-            print(f"{QR_BLACK}{line}{QR_RESET}", flush=True)
+            print(f"{line}", flush=True)
 
 
 def qr_cell(top: bool, bottom: bool) -> str:
