@@ -4,3 +4,4 @@ apscheduler
 loguru
 onepush
 pyyaml
+qrcode
